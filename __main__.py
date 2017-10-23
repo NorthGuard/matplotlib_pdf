@@ -2,8 +2,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-import PDFFigures
-from PDFFigures.pdf_figure_manager import PDFFigureContainer
+import pdf_pages
+from pdf_pages.pdf_figure_manager import PDFFigureContainer
 
 plt.close("all")
 plt.figure()
@@ -12,7 +12,7 @@ plt.ioff()
 stamp_size = 9
 
 # Directory for test figures
-output_dir = Path(PDFFigures.__file__).parent
+output_dir = Path(pdf_pages.__file__).parent
 
 # Create PDF-figures container and enable time-stamping
 container = PDFFigureContainer(Path(output_dir, "container.pdf"))

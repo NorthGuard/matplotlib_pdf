@@ -1,4 +1,4 @@
-from PDFFigures.utility import add_datetime_to_page, annotate_pdf_page
+from pdf_pages.utility import add_datetime_to_page, annotate_pdf_page
 from PyPDF2.pdf import PageObject
 
 

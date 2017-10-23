@@ -1,1 +1,1 @@
-from PDFFigures.pdf_figure_manager import PDFFigureContainer
+from pdf_pages.pdf_figure_manager import PDFFigureContainer
