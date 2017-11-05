@@ -1,5 +1,6 @@
 from io import BytesIO
 from pathlib import Path
+from time import sleep
 
 import matplotlib.pyplot as plt
 from PyPDF2 import PdfFileWriter, PdfFileReader
@@ -137,13 +138,24 @@ class PDFFigureContainer:
             line_h_factor=line_h_factor
         )
 
-    def update_file(self):
+    def update_file(self, max_tries=5):
         """
         Update file with pages.
         Used if commit is set to False when adding pages, which buffers pages until update_file() is called.
         """
-        with self._file_path.open("wb") as output_stream:
-            self._writer.write(output_stream)
+        try_nr = 0
+        keep_trying = True
+        while keep_trying:
+            try:
+                with self._file_path.open("wb") as output_stream:
+                    self._writer.write(output_stream)
+                keep_trying = False
+                try_nr += 1
+            except PermissionError as e:
+                sleep(0.25)
+                if try_nr >= max_tries:
+                    raise e
+
 
     def add_figure_page(self, page_nr=None, figure=None, commit=True,
                         bbox_inches="tight", facecolor=None):
