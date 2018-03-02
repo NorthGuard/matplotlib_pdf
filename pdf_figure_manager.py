@@ -42,6 +42,10 @@ class PDFFigureContainer:
                 print("Unable to read PDF-file! Overwriting.")
                 self._writer = PdfFileWriter()
 
+    @property
+    def file_path(self):
+        return self._file_path
+
     def set_enumeration(self, enumerate_pages=True,
                         font_size=12, h_offset=2, v_offset=2,
                         n_pages=None, header=None, position="se",
