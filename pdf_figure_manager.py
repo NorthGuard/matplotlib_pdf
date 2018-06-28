@@ -162,7 +162,7 @@ class PDFFigureContainer:
 
 
     def add_figure_page(self, page_nr=None, figure=None, commit=True,
-                        bbox_inches="tight", facecolor=None):
+                        bbox_inches="tight", facecolor=None, pause=None):
         """
         Add a page to figures-PDF.
         :param int page_nr: Page number of page.
@@ -172,7 +172,12 @@ class PDFFigureContainer:
         :param bool commit: Commit page to PDF. If False then page is held in buffer until update_file() is called.
         :param str bbox_inches: Setting for making page tight. Passed onto pyplot.savefig().
         :param facecolor: Facecolor of page.
+        :param pause: A floating-point for seconds to wait for matplotlib before saving page (otherwise figure may be
+            saved before generated). If this is a problem, then a typical value would be 0.1.
         """
+        if pause is not None:
+            plt.pause(pause)
+
         # Default options
         options = dict(bbox_inches=bbox_inches)
         if facecolor is not None:
