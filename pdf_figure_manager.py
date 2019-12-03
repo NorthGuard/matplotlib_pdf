@@ -42,6 +42,12 @@ class PDFFigureContainer:
                 print("Unable to read PDF-file! Overwriting.")
                 self._writer = PdfFileWriter()
 
+    def __str__(self):
+        return f"PDFFigureContainer({self._file_path})"
+
+    def __repr__(self):
+        return str(self)
+
     @property
     def file_path(self):
         return self._file_path
