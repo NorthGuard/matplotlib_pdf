@@ -1,5 +1,5 @@
 from setuptools import setup
-from .matplotlib_pdf import __version__
+from matplotlib_pdf import __version__
 
 with open("pypi_description.md", "r") as fh:
     long_description = fh.read()
