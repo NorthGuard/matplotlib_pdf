@@ -14,7 +14,7 @@ setup(
     author='Jeppe Nørregaard',
     description='Maintain a PDF-file with Matplotlib figures as pages.',
     keywords="matplotlib pdf figure",
-    url='https://github.com/NorthGuard/pdf_pages',
+    url='https://github.com/NorthGuard/matplotlib_pdf',
 
     classifiers=[
         'Programming Language :: Python :: 3+',
