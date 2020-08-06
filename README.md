@@ -1,5 +1,5 @@
-# pdf_pages
-`pdf_pages` can maintain a PDF-file with Matplotlib figures as pages.  
+# matplotlib_pdf
+`matplotlib_pdf` can maintain a PDF-file with Matplotlib figures as pages.  
 The container is initialized with a Path to a destination for putting the PDF-file with the figures.  
 `container.add_figure_page()` is called to add current figure to PDF.
 
@@ -34,4 +34,4 @@ Running the `__main__.py`-script will make three figures and pass them all to a 
 page with a different figure. The end result is something like:  
 ![PDF-file example.][pdf_example]
 
-[pdf_example]: https://github.com/North-Guard/pdf_pages/blob/master/src/pdf_container_example.PNG "PDF-file example."
+[pdf_example]: https://github.com/NorthGuard/matplotlib_pdf/blob/master/matplotlib_pdf/pdf_container_example.PNG "PDF-file example."
