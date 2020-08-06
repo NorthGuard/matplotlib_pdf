@@ -3,3 +3,7 @@
 .idea/
 
 *.pyc
+
+matplotlib_pdf.egg-info/
+
+dist/

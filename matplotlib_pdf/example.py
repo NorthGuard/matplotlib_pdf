@@ -15,35 +15,25 @@ output_dir = Path(__file__).parent.parent
 
 # Create PDF-figures container and enable time-stamping
 container = PDFFigureContainer(Path(output_dir, "container.pdf"))
-container.set_timestamp(font_size=stamp_size)
-container.set_enumeration(n_pages=3, font_size=stamp_size)
+container.set_timestamp(font_size=stamp_size)  # Put timestamp in corner
+container.set_enumeration(n_pages=3, font_size=stamp_size)  # Put page number in corner
 
 # Create some figures and add to container
+
+# Figure 1
 plt.scatter([1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 9, 2, 8, 3, 7, 4, 6, 5])
 container.add_figure_page()
-plt.close("all")
+
+# Figure 2
 plt.figure()
-plt.scatter([1, 9, 2, 8, 3, 7, 4, 6, 5], [1, 2, 3, 4, 5, 6, 7, 8, 9])
+plt.plot([1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
 container.add_figure_page()
-plt.close("all")
+
+# Figure 2 3
 plt.figure()
 plt.scatter([1, 1, 1, 2, 3, 3, 3, 4, 5], [1, 2, 3, 3, 3, 2, 1, 1, 1])
 container.add_figure_page()
-
-# Delete container
-del container
-
-# Reopen container while keeping pages
-container = PDFFigureContainer(Path(output_dir, "container.pdf"),
-                               empty_file=False)
-container.set_timestamp(True, header="Created:", font_size=stamp_size)
-container.set_enumeration(n_pages=3, font_size=stamp_size)
-
-# Overwrite second page
 plt.close("all")
-plt.figure()
-plt.plot([1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
-container.add_figure_page(1)
 
 # Print
 print("Container at '{}' updated.".format(container.file_path))
