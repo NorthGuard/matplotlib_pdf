@@ -34,4 +34,4 @@ Running the `__main__.py`-script will make three figures and pass them all to a 
 page with a different figure. The end result is something like:  
 ![PDF-file example.][pdf_example]
 
-[pdf_example]: https://github.com/North-Guard/pdf_pages/blob/master/pdf_container_example.PNG "PDF-file example."
+[pdf_example]: https://github.com/North-Guard/pdf_pages/blob/master/src/pdf_container_example.PNG "PDF-file example."

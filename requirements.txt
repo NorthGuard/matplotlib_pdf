@@ -1,0 +1,3 @@
+matplotlib
+PyPDF2
+reportlab

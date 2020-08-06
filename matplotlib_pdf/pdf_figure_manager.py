@@ -7,7 +7,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.pdf import PageObject
 from PyPDF2.utils import PdfReadError
 
-from pdf_pages.stampers import TimeStamper, Enumerator
+from .stampers import TimeStamper, Enumerator
 
 
 class PDFFigureContainer:
