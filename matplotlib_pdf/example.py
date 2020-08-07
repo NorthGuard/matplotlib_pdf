@@ -4,23 +4,20 @@ import matplotlib.pyplot as plt
 
 from matplotlib_pdf import PDFFigureContainer
 
-plt.close("all")
-plt.figure()
-plt.ioff()
-
-stamp_size = 9
-
-# Directory for test figures
+# Directory for PDF-file
 output_dir = Path(__file__).parent.parent
 
-# Create PDF-figures container and enable time-stamping
+# Create PDF-figures container
 container = PDFFigureContainer(Path(output_dir, "container.pdf"))
-container.set_timestamp(font_size=stamp_size)  # Put timestamp in corner
-container.set_enumeration(n_pages=3, font_size=stamp_size)  # Put page number in corner
+
+# Enable time-stamping and page numbers
+container.set_timestamp(font_size=9)  # Put timestamp in corner
+container.set_enumeration(n_pages=3, font_size=9)  # Put page number in corner
 
 # Create some figures and add to container
 
 # Figure 1
+plt.figure()
 plt.scatter([1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 9, 2, 8, 3, 7, 4, 6, 5])
 container.add_figure_page()
 
