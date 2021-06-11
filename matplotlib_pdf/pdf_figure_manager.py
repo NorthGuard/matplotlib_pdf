@@ -1,8 +1,10 @@
+import warnings
 from io import BytesIO
 from pathlib import Path
 from time import sleep
 
 import matplotlib.pyplot as plt
+# noinspection PyProtectedMember
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.pdf import PageObject
 from PyPDF2.utils import PdfReadError
@@ -11,24 +13,29 @@ from .stampers import TimeStamper, Enumerator
 
 
 class PDFFigureContainer:
-    def __init__(self, file_path, empty_file=True):
+    def __init__(self, file_path, empty_file=True, mk_dir=True):
         """
         Can maintain a PDF-file with Matplotlib figures in.
         Can update specific pages while maintaining the rest.
         Can be set to stamp pages with page-numbers and write-times.
-        :param Path file_path: Path to put PDF-file with figures.
+        :param Path | str file_path: Path to put PDF-file with figures.
         :param bool empty_file: Empty file at start. Otherwise keep pages.
+        :param bool mk_dir: Make directory and parents if they don't exist.
         """
         # Time-stamping
         self._time_stamp_pages = False
+        # noinspection PyTypeChecker
         self._time_stamper = None  # type: TimeStamper
 
         # Number-stamping
         self._enumerate_pages = False
+        # noinspection PyTypeChecker
         self._enumerator = None  # type: Enumerator
 
         # Path to PDF-file
-        self._file_path = file_path
+        self._file_path = Path(file_path)
+        if mk_dir:
+            self._file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Make writer
         self._writer = PdfFileWriter()
@@ -148,10 +155,10 @@ class PDFFigureContainer:
             line_h_factor=line_h_factor
         )
 
-    def update_file(self, max_tries=5):
+    def commit(self, max_tries=5):
         """
         Update file with pages.
-        Used if commit is set to False when adding pages, which buffers pages until update_file() is called.
+        Used if commit is set to False when adding pages, which buffers pages until commit() is called.
         """
         try_nr = 0
         keep_trying = True
@@ -166,7 +173,6 @@ class PDFFigureContainer:
                 if try_nr >= max_tries:
                     raise e
 
-
     def add_figure_page(self, page_nr=None, figure=None, commit=True,
                         bbox_inches="tight", facecolor=None, pause=None):
         """
@@ -175,14 +181,16 @@ class PDFFigureContainer:
             None: Append page to file.
             int:  Replace specific page location with page.
         :param figure: Figure to put into PDF (defaults to plt.gcf()).
-        :param bool commit: Commit page to PDF. If False then page is held in buffer until update_file() is called.
+        :param bool commit: Commit page to PDF. If False then page is held in buffer until commit() is called.
         :param str bbox_inches: Setting for making page tight. Passed onto pyplot.savefig().
         :param facecolor: Facecolor of page.
         :param pause: A floating-point for seconds to wait for matplotlib before saving page (otherwise figure may be
             saved before generated). If this is a problem, then a typical value would be 0.1.
         """
         if pause is not None:
-            plt.pause(pause)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                plt.pause(pause)
 
         # Default options
         options = dict(bbox_inches=bbox_inches)
@@ -222,7 +230,7 @@ class PDFFigureContainer:
 
         # Commit if needed
         if commit:
-            self.update_file()
+            self.commit()
 
     def _insert_pages(self, pages, page_nrs):
         """
