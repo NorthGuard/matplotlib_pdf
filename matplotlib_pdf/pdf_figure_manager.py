@@ -4,7 +4,6 @@ from pathlib import Path
 from time import sleep
 
 import matplotlib.pyplot as plt
-# noinspection PyProtectedMember
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from PyPDF2.pdf import PageObject
 from PyPDF2.utils import PdfReadError
@@ -13,6 +12,7 @@ from .stampers import TimeStamper, Enumerator
 
 
 class PDFFigureContainer:
+    # noinspection PyTypeChecker
     def __init__(self, file_path, empty_file=True, mk_dir=True):
         """
         Can maintain a PDF-file with Matplotlib figures in.
@@ -22,14 +22,15 @@ class PDFFigureContainer:
         :param bool empty_file: Empty file at start. Otherwise keep pages.
         :param bool mk_dir: Make directory and parents if they don't exist.
         """
+        # Temporary storage
+        self._spool_storage = []
+
         # Time-stamping
         self._time_stamp_pages = False
-        # noinspection PyTypeChecker
         self._time_stamper = None  # type: TimeStamper
 
         # Number-stamping
         self._enumerate_pages = False
-        # noinspection PyTypeChecker
         self._enumerator = None  # type: Enumerator
 
         # Path to PDF-file
@@ -54,6 +55,15 @@ class PDFFigureContainer:
 
     def __repr__(self):
         return str(self)
+
+    # def __len__(self):
+    #     return self._writer.getNumPages()
+
+    def _file_length(self):
+        return self._writer.getNumPages()
+
+    def _full_length(self):
+        return self._writer.getNumPages() + len(self._spool_storage)
 
     @property
     def file_path(self):
@@ -160,28 +170,17 @@ class PDFFigureContainer:
         Update file with pages.
         Used if commit is set to False when adding pages, which buffers pages until commit() is called.
         """
-        try_nr = 0
-        keep_trying = True
-        while keep_trying:
-            try:
-                with self._file_path.open("wb") as output_stream:
-                    self._writer.write(output_stream)
-                keep_trying = False
-                try_nr += 1
-            except PermissionError as e:
-                sleep(0.25)
-                if try_nr >= max_tries:
-                    raise e
+        # Spool
+        self._spool()
 
-    def add_figure_page(self, page_nr=None, figure=None, commit=True,
-                        bbox_inches="tight", facecolor=None, pause=None):
+        # Write to file
+        self._write_file(max_tries=max_tries)
+
+    @staticmethod
+    def figure2page(figure=None, bbox_inches="tight", facecolor=None, pause=None):
         """
         Add a page to figures-PDF.
-        :param int page_nr: Page number of page.
-            None: Append page to file.
-            int:  Replace specific page location with page.
         :param figure: Figure to put into PDF (defaults to plt.gcf()).
-        :param bool commit: Commit page to PDF. If False then page is held in buffer until commit() is called.
         :param str bbox_inches: Setting for making page tight. Passed onto pyplot.savefig().
         :param facecolor: Facecolor of page.
         :param pause: A floating-point for seconds to wait for matplotlib before saving page (otherwise figure may be
@@ -210,29 +209,95 @@ class PDFFigureContainer:
         new_pdf = PdfFileReader(buf)
         page = new_pdf.getPage(0)
 
+        return page
+
+    def add_figure_page(self, page_nr=None, figure=None, commit=True,
+                        bbox_inches="tight", facecolor=None, pause=None):
+        """
+        Convert matplotlib figure to page in PDF.
+        :param int page_nr: Page number of page.
+            None: Append page to file.
+            int:  Replace specific page location with page.
+        :param figure: Figure to put into PDF (defaults to plt.gcf()).
+        :param bool commit: Commit page to PDF. If False then page is held in buffer until commit() is called.
+        :param str bbox_inches: Setting for making page tight. Passed onto pyplot.savefig().
+        :param facecolor: Facecolor of page.
+        :param pause: A floating-point for seconds to wait for matplotlib before saving page (otherwise figure may be
+            saved before generated). If this is a problem, then a typical value would be 0.1.
+        """
+        # Convert figure to page
+        page = self.figure2page(figure=figure, bbox_inches=bbox_inches, facecolor=facecolor, pause=pause)
+
+        # Add page
+        return self.add_page(page=page, page_nr=page_nr, commit=commit)
+
+    def add_page(self, page, page_nr=None, commit=True):
+        """
+        Add a page to PDF.
+        :param PageObject page: Page
+        :param int page_nr: Page number of page.
+            None: Append page to file.
+            int:  Replace specific page location with page.
+        :param bool commit: Commit page to PDF. If False then page is held in buffer until commit() is called.
+        """
         # Check for time-stamping
         if self._time_stamp_pages:
             self._time_stamper.do_stamp(page=page)
 
+        # Ensure page number
+        if page_nr is None:
+            page_nr = self._full_length()
+
         # Check for page-enumeration
         if self._enumerate_pages:
-            if page_nr is None:
-                page_nr = self._enumerator.nr
-                self._enumerator.do_stamp(page=page)
-            else:
-                self._enumerator.do_stamp(page=page, page_nr=page_nr)
+            self._enumerator.do_stamp(page=page, page_nr=page_nr)
 
-        # Add page
-        if page_nr is not None or self._enumerate_pages:
-            self._insert_page(page=page, page_nr=page_nr)
-        else:
-            self._writer.addPage(page)
+        # Add to spool
+        self._spool_storage.append((page_nr, page))
 
         # Commit if needed
         if commit:
             self.commit()
 
-    def _insert_pages(self, pages, page_nrs):
+        # Return page-nr for optional book-keeping
+        return page_nr
+
+    def _spool(self):
+        # Single element in spool storage
+        if len(self._spool_storage) == 1:
+            page_nr, page = self._spool_storage[0]
+
+            # Check for single page appended and append fast
+            if page_nr == self._file_length():
+                self._writer.addPage(page)
+
+            # Otherwise insert specifically
+            else:
+                self._write_pages([page], [page_nr])
+
+        # Multiple elements in spool storage
+        else:
+            # Split
+            page_nrs = [page_nr for page_nr, _ in self._spool_storage]
+            pages = [page for _, page in self._spool_storage]
+
+            # All are appended
+            temp = list(range(self._file_length(), self._full_length()))
+            assert len(temp) == len(page_nrs)
+            if page_nrs == temp:
+
+                # Simply write to writer
+                for _, page in self._spool_storage:
+                    self._writer.addPage(page)
+
+            # Otherwise insert specifically
+            else:
+                self._write_pages(pages, page_nrs)
+
+        # Clear spool
+        self._spool_storage = []
+
+    def _write_pages(self, pages, page_nrs):
         """
         Inserts a number of pages to file.
         :param list[PageObject] pages: Pages for file.
@@ -258,10 +323,27 @@ class PDFFigureContainer:
             else:
                 self._writer.addPage(reader.getPage(i))
 
-    def _insert_page(self, page, page_nr):
-        """
-        Inserts one page into file.
-        :param PageObject page: Page for file.
-        :param int page_nr: Page-number of page.
-        """
-        self._insert_pages([page], [page_nr])
+    def _write_file(self, max_tries):
+        # Save to file - if exceptions are found, then make 5 attempts with a small time-delay
+        try_nr = 0
+        keep_trying = True
+        while keep_trying:
+
+            # Try to save
+            try:
+
+                # Save
+                with self._file_path.open("wb") as output_stream:
+                    self._writer.write(output_stream)
+
+                # We are done
+                keep_trying = False
+
+            except PermissionError as e:
+                # Check if exception should be raised
+                if try_nr >= max_tries:
+                    raise e
+
+                # Sleep and update number of tries
+                sleep(0.25)
+                try_nr += 1

@@ -149,6 +149,7 @@ class Enumerator(PDFStamper):
         """
         Put stamp on page.
         :param PageObject page: Page for stamp.
+        :param int | None page_nr: Page number.
         :param kwargs:
         """
         if page_nr is None:

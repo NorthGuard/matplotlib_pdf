@@ -11,3 +11,4 @@ __author__ = 'Jeppe Nørregaard'
 
 
 from .pdf_figure_manager import PDFFigureContainer
+from .utility import package_dir as _package_dir

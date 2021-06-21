@@ -5,6 +5,10 @@ from PyPDF2 import PdfFileReader
 from PyPDF2.pdf import PageObject
 from reportlab.pdfgen.canvas import Canvas
 
+from pathlib import Path
+
+package_dir = Path(__file__).parent
+
 
 def annotate_pdf_page(pdf_page, text, font_size=12,
                       h_offset=2, v_offset=2, position="nw",
