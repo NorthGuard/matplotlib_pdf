@@ -42,7 +42,7 @@ def test_w_pdf():
     del init_pdf
 
     # Test reload
-    init_pdf_reload = PDFFigureContainer(file_path=file_path, empty_file=False)
+    init_pdf_reload = PDFFigureContainer(file_path=file_path, truncate_file=False)
     assert len(init_pdf_reload) == 1
     del init_pdf_reload
     
@@ -127,7 +127,7 @@ def test_w_pdf():
     del pdf
 
     # Test adding page with new object
-    pdf_reload = PDFFigureContainer(file_path=file_path, empty_file=False)
+    pdf_reload = PDFFigureContainer(file_path=file_path, truncate_file=False)
     assert len(pdf_reload) == n_total
     title = "Appended page"
     correct_answers.append(title)

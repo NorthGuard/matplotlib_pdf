@@ -13,13 +13,13 @@ from .stampers import TimeStamper, Enumerator
 
 class PDFFigureContainer:
     # noinspection PyTypeChecker
-    def __init__(self, file_path, empty_file=True, mk_dir=True):
+    def __init__(self, file_path, truncate_file=True, mk_dir=True):
         """
         Can maintain a PDF-file with Matplotlib figures in.
         Can update specific pages while maintaining the rest.
         Can be set to stamp pages with page-numbers and write-times.
         :param Path | str file_path: Path to put PDF-file with figures.
-        :param bool empty_file: Empty file at start. Otherwise keep pages.
+        :param bool truncate_file: Empty file at start. Otherwise keep pages.
         :param bool mk_dir: Make directory and parents if they don't exist.
         """
         # Temporary storage
@@ -40,7 +40,7 @@ class PDFFigureContainer:
 
         # Make writer
         self._writer = PdfFileWriter()
-        if not empty_file and file_path.is_file():
+        if not truncate_file and file_path.is_file():
             try:
                 reader = PdfFileReader(str(file_path))
                 for page in reader.pages:
