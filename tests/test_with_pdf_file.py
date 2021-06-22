@@ -5,6 +5,15 @@ import matplotlib.pyplot as plt
 from matplotlib_pdf import PDFFigureContainer, _package_dir
 
 
+def _make_figure(the_title):
+    plt.figure()
+    ax = plt.gca()  # type: plt.Axes
+    ax.scatter([0.5], [0.35])
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.text(0.5, 0.5, the_title, ha="center")
+
+
 def test_w_pdf():
     n_standard_figure = 3
     n_late_commit_figures = 3
@@ -21,24 +30,32 @@ def test_w_pdf():
     output_dir.mkdir(exist_ok=True)
     for file in output_dir.glob("*"):
         file.unlink()
+        
+    # Path to file
+    file_path = Path(output_dir, "test_file.pdf")
+    
+    # Create PDF to truncate
+    init_pdf = PDFFigureContainer(file_path=file_path)
+    _make_figure("Should not be shown")
+    init_pdf.add_figure_page()
+    assert len(init_pdf) == 1
+    del init_pdf
 
+    # Test reload
+    init_pdf_reload = PDFFigureContainer(file_path=file_path, empty_file=False)
+    assert len(init_pdf_reload) == 1
+    del init_pdf_reload
+    
     # Create PDF-figures container
-    pdf = PDFFigureContainer(Path(output_dir, "test_file.pdf"))
+    pdf = PDFFigureContainer(file_path=file_path)
     n_total = 0
-
-    def make_figure(the_title):
-        plt.figure()
-        ax = plt.gca()  # type: plt.Axes
-        ax.scatter([0.5], [0.35])
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-        ax.text(0.5, 0.5, the_title, ha="center")
+    assert len(pdf) == n_total
 
     # Create some figures
     for nr in range(len(pdf) + 1, len(pdf) + 1 + n_standard_figure):
         title = f"Axes {nr}"
         correct_answers.append(title)
-        make_figure(title)
+        _make_figure(title)
         pdf.add_figure_page()
         plt.close()
 
@@ -48,7 +65,7 @@ def test_w_pdf():
     # Replace a figure
     title = f"Axes {nr_replace + 1} replaced"
     correct_answers[nr_replace] = title
-    make_figure(title)
+    _make_figure(title)
     del title
     pdf.add_figure_page(page_nr=nr_replace)
     plt.close()
@@ -59,7 +76,7 @@ def test_w_pdf():
     for nr in range(len(pdf) + 1, len(pdf) + 1 + n_late_commit_figures):
         title = f"Axes {nr}, made with postponed commit"
         correct_answers.append(title)
-        make_figure(title)
+        _make_figure(title)
         pdf.add_figure_page(commit=False)
         plt.close()
 
@@ -74,7 +91,7 @@ def test_w_pdf():
     for nr in range(len(pdf) + 1, len(pdf) + 1 + n_pages_create_separately):
         title = f"Axes {nr} made as separate pages"
         correct_answers.append(title)
-        make_figure(title)
+        _make_figure(title)
         pages.append(PDFFigureContainer.figure2page())
         plt.close()
 
@@ -91,7 +108,7 @@ def test_w_pdf():
     for nr in range(len(pdf) + 1, len(pdf) + 1 + n_stamped_figures):
         title = f"Axes {nr}, with stamps [check the stamps]"
         correct_answers.append(title)
-        make_figure(title)
+        _make_figure(title)
         pdf.add_figure_page()
         plt.close()
 
@@ -101,15 +118,27 @@ def test_w_pdf():
     # Replace a figure with stampe
     title = f"Axes {nr_replaced_w_stamp + 1} replaced with stamps [check the stamps]"
     correct_answers[nr_replaced_w_stamp] = title
-    make_figure(title)
+    _make_figure(title)
     del title
     pdf.add_figure_page(page_nr=nr_replaced_w_stamp)
     plt.close()
 
     assert len(pdf) == n_total
+    del pdf
+
+    # Test adding page with new object
+    pdf_reload = PDFFigureContainer(file_path=file_path, empty_file=False)
+    assert len(pdf_reload) == n_total
+    title = "Appended page"
+    correct_answers.append(title)
+    _make_figure(title)
+    pdf_reload.add_figure_page()
+    n_total += 1
+    assert len(pdf_reload) == n_total
+    del title, pdf_reload
 
     # Print
-    print("\n\nContainer at '{}' updated.".format(pdf.file_path))
+    print("\n\nContainer at '{}' updated.".format(file_path))
     print("\nCheck that the pages have the following titles (and check information in []-brackets):")
     for title in correct_answers:
         print(f"\t{title}")
