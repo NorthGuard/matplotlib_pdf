@@ -56,8 +56,8 @@ class PDFFigureContainer:
     def __repr__(self):
         return str(self)
 
-    # def __len__(self):
-    #     return self._writer.getNumPages()
+    def __len__(self):
+        return self._full_length()
 
     def _file_length(self):
         return self._writer.getNumPages()

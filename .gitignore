@@ -7,3 +7,5 @@
 matplotlib_pdf.egg-info/
 
 dist/
+
+tests/results/
