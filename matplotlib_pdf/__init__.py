@@ -6,7 +6,7 @@ The container is initialized with a Path to a destination for putting the PDF-fi
 container.add_figure_page() is called to add current figure to PDF.
 """
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 __author__ = 'Jeppe Nørregaard'
 
 
