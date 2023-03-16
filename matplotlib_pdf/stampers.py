@@ -1,5 +1,5 @@
 from .utility import add_datetime_to_page, annotate_pdf_page
-from PyPDF2.pdf import PageObject
+from PyPDF2 import PageObject
 
 
 class PDFStamper:

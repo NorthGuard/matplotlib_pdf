@@ -1,8 +1,7 @@
 from datetime import datetime
 from io import BytesIO
 
-from PyPDF2 import PdfFileReader
-from PyPDF2.pdf import PageObject
+from PyPDF2 import PdfFileReader, PageObject
 from reportlab.pdfgen.canvas import Canvas
 
 from pathlib import Path

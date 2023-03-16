@@ -4,9 +4,8 @@ from pathlib import Path
 from time import sleep
 
 import matplotlib.pyplot as plt
-from PyPDF2 import PdfFileWriter, PdfFileReader
-from PyPDF2.pdf import PageObject
-from PyPDF2.utils import PdfReadError
+from PyPDF2 import PdfFileWriter, PdfFileReader, PageObject
+from PyPDF2.errors import PdfReadError
 
 from .stampers import TimeStamper, Enumerator
 
